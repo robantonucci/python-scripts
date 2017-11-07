@@ -1,10 +1,11 @@
 #!/usr/bin/env python
 import codecs
 import base64
-from sys import argv
 import argparse
 import urllib
 import hashlib
+from sys import argv
+from binascii import hexlify
 
 parser = argparse.ArgumentParser(
   description="This script will encode/decode strings")
@@ -21,6 +22,8 @@ second_group.add_argument(
   "--base64", help="Base64", action="store_true")
 second_group.add_argument(
   "--md5", help="MD5", action="store_true")
+second_group.add_argument(
+  "--ntlm", help="NTLM", action="store_true")
 second_group.add_argument(
   "--rot13", help="ROT13", action="store_true")
 second_group.add_argument(
@@ -62,7 +65,15 @@ class Str:
             h.update(self.input_string)
             return h.hexdigest()
         else:
-            return "Need to crack MD5 :)"
+            return "https://hashkiller.co.uk/md5-decrypter.aspx"
+
+    def ntlm(self):
+        if self.e:
+            h = self.input_string.encode('utf-16le')
+            h = hashlib.new('md4', h).digest()
+            return hexlify(h)
+        else:
+            return "https://hashkiller.co.uk/ntlm-decrypter.aspx"
 
 
 if args.encode:
@@ -78,5 +89,7 @@ elif args.url:
     print str_object.url()
 elif args.md5:
     print str_object.md5()
+elif args.ntlm:
+    print str_object.ntlm()
 else:
     print "Please specify a valid encoder/decoder!"
