@@ -27,8 +27,10 @@ second_group.add_argument(
 second_group.add_argument(
   "--rot13", help="ROT13", action="store_true")
 second_group.add_argument(
+   "--psh", help="PowerShell Base64 (Unicode)", action="store_true")
+second_group.add_argument(
   "--url", help="URL", action="store_true")
-
+  
 if len(argv) == 3:
     parser.print_help()
     exit(1)
@@ -75,7 +77,14 @@ class Str:
         else:
             return "https://hashkiller.co.uk/ntlm-decrypter.aspx"
 
+    def psh(self):
+        if self.e:
+            return base64.b64encode(self.input_string.encode('utf-16le'))
+        else:
+            return base64.b64decode(self.input_string).decode('utf-16le')
 
+
+# encode or decode?
 if args.encode:
     str_object = Str(args.input_string, 1)
 else:
@@ -91,5 +100,5 @@ elif args.md5:
     print str_object.md5()
 elif args.ntlm:
     print str_object.ntlm()
-else:
-    print "Please specify a valid encoder/decoder!"
+elif args.psh:
+    print str_object.psh()
