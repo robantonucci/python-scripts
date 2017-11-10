@@ -1,11 +1,12 @@
 #!/usr/bin/env python
+"""Ping a list of given IPs/hostnames."""
 import argparse
 import pyping
 from sys import argv, exit
 
 
-parser = argparse.ArgumentParser(description=
-                                 "Check if list of IPs responds to ping")
+parser = argparse.ArgumentParser(
+  description="Check if list of IPs responds to ping")
 parser.add_argument("input", help="Plaintext list of IPs")
 parser.add_argument("-o", "--output", help="Output to CSV file")
 parser.add_argument("--dead", help="Only show dead systems",
@@ -23,20 +24,24 @@ if args.alive and args.dead:
 
 
 class Computer:
+    """Computer class."""
 
     total_computers = 0
 
     def __init__(self, name):
+        """Strip spaces from the name and set the status to Dead."""
         self.name = name.strip()
         self.status = 'Dead'
         Computer.total_computers += 1
 
     def ping(self):
+        """Try to ping the computer."""
         p = pyping.ping(self.name, count=1)
         if p.ret_code == 0:
             self.status = 'Alive'
 
     def format(self):
+        """Format the output string for CSV."""
         return "%s,%s" % (self.name, self.status)
 
 
