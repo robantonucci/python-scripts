@@ -30,7 +30,7 @@ second_group.add_argument(
    "--psh", help="PowerShell Base64 (Unicode)", action="store_true")
 second_group.add_argument(
   "--url", help="URL", action="store_true")
-  
+
 if len(argv) == 3:
     parser.print_help()
     exit(1)
