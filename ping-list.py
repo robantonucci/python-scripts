@@ -4,8 +4,8 @@ import pyping
 from sys import argv, exit
 
 
-parser = argparse.ArgumentParser(description=
-                                 "Check if list of IPs responds to ping")
+parser = argparse.ArgumentParser(
+  description="Check if list of IPs responds to ping")
 parser.add_argument("input", help="Plaintext list of IPs")
 parser.add_argument("-o", "--output", help="Output to CSV file")
 parser.add_argument("--dead", help="Only show dead systems",
