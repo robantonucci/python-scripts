@@ -4,7 +4,7 @@ import base64
 import argparse
 import urllib
 import hashlib
-from sys import argv
+from sys import argv, exit
 from binascii import hexlify
 
 parser = argparse.ArgumentParser(
@@ -31,9 +31,9 @@ second_group.add_argument(
 second_group.add_argument(
   "--url", help="URL", action="store_true")
 
-if len(argv) == 3:
+if len(argv) < 4:
     parser.print_help()
-    exit(1)
+    exit()
 args = parser.parse_args()
 
 

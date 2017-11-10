@@ -1,76 +1,67 @@
 #!/usr/bin/env python
-
-########################################################################
-#
-# name:     ping-list.py
-# created:  4/14/2016
-# updated:  5/26/2016
-# author:   rob antonucci
-# descript: This script will ping a list of IPs
-# to do:    
-#
-########################################################################
-
-import subprocess
 import argparse
-import csv
-import re
-import sys
 import pyping
+from sys import argv, exit
 
-parser = argparse.ArgumentParser(
-    description="Check if list of IPs responds to ping")
+
+parser = argparse.ArgumentParser(description=
+                                 "Check if list of IPs responds to ping")
 parser.add_argument("input", help="Plaintext list of IPs")
 parser.add_argument("-o", "--output", help="Output to CSV file")
 parser.add_argument("--dead", help="Only show dead systems",
-    action="store_true")
+                    action="store_true")
 parser.add_argument("--alive", help="Only show alive systems",
-    action="store_true")    
+                    action="store_true")
 
-if len(sys.argv) == 1:
+if len(argv) < 2:
     parser.print_help()
-    sys.exit(1)
+    exit()
 args = parser.parse_args()
+if args.alive and args.dead:
+    print "[-] Please choose alive or dead."
+    exit()
 
-# set up variable names
-ifile = args.input
-ofile = args.output
-dead = args.dead
-alive = args.alive
-in_file = open(ifile, 'r')
-result = []
 
-if alive and dead:
-    print "[-] Please choose alive or dead.."
-    exit(1)
+class Computer:
 
-if ofile:
-    out_file = open(ofile, 'wb')
-    writer = csv.writer(out_file, delimiter = '\n')
+    total_computers = 0
 
-for line in in_file:
-    server = line.strip()
-    if line != '':
-        try:
-            r = pyping.ping(server, count=1)
-            if r.ret_code == 0:
-                out = '%s,Alive' % server
-            else:
-                out = '%s,Dead' % server
-        except:
-            out = '%s,Dead' % server
-        if dead:
-            if 'Dead' in out:
-                print out
-        elif alive:
-            if 'Alive' in out:
-                print out
-        else:
-            print out
-        result.append(out)
+    def __init__(self, name):
+        self.name = name.strip()
+        self.status = 'Dead'
+        Computer.total_computers += 1
 
+    def ping(self):
+        p = pyping.ping(self.name, count=1)
+        if p.ret_code == 0:
+            self.status = 'Alive'
+
+    def format(self):
+        return "%s,%s" % (self.name, self.status)
+
+
+in_file = open(args.input, 'r')
+computers = [Computer(name=name) for name in in_file]
 in_file.close()
+if args.output:
+    out_file = open(args.output, 'wb')
 
-if ofile:
-    writer.writerow(result)
+for comp_obj in computers:
+    if comp_obj.name != '':
+        try:
+            comp_obj.ping()
+        except Exception as e:
+            print "[-] EXCEPTION on %s: %s" % (comp_obj.name, str(e))
+        if args.dead or args.alive:
+            if args.dead and comp_obj.status == 'Dead':
+                print comp_obj.format()
+            elif args.alive and comp_obj.status == 'Alive':
+                print comp_obj.format()
+        else:
+            print comp_obj.format()
+        if args.output:
+            out_file.write(comp_obj.format() + '\n')
+
+print "Pinged %d computer(s)." % Computer.total_computers
+if args.output:
     out_file.close()
