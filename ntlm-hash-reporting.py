@@ -48,7 +48,7 @@ class ParseHashLine:
     """Parse the username and NTLM hash from input string."""
 
     def __init__(self, unparsed_str):
-        """Docstring."""
+        """Initialize class."""
         self.unparsed_str = unparsed_str.strip()
         self.user = ''
         self.ntlm_hash = ''
@@ -89,7 +89,6 @@ with open(args.hashes) as in_hashes:
                                    hash_str.user.lower()]))
                 passwords = [Password(password=password) for password in
                              unique_pass]
-
             except Exception:
                 pass
 
