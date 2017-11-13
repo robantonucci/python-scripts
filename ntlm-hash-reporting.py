@@ -1,91 +1,106 @@
 #!/usr/bin/env python
-
-########################################################################
-#
-# name:     ntlm-hash-reporting.py
-# created:  2/22/2016
-# updated:  3/30/2016
-# author:   rob antonucci
-# descript: This script will look through a NTLM hash dump and check
-#           for certain passwords
-# to do:    
-#
-########################################################################
-
+"""This script will analyze a NTLM hashdump for specified passwords."""
 import hashlib
-import binascii
+from binascii import hexlify
 import re
 import argparse
-import sys
+from sys import argv, exit
+from passlib.hash import lmhash
 
 parser = argparse.ArgumentParser(
-    description="Report on NTLM Hashe Dumps")
-parser.add_argument("-f", "--file",
-    help="Import passwords from file")
-parser.add_argument("-n", "--hashes",
-    help="Import hashes from file")
-parser.add_argument("-p", "--password",
-    help="Password to use")
-parser.add_argument("-u", "--username",
-    help="Check username as password", action="store_true")
+  description="Report on NTLM Hash Dumps\n"
+  "Expected hash format: Administrator:500:000:000:::")
+parser.add_argument("-f", "--file", help="Import passwords from file")
+parser.add_argument("-n", "--hashes", help="Import hashes from file")
+parser.add_argument("-p", "--password", help="Password to use")
+parser.add_argument("-u", "--username", help="Check username as password",
+                    action="store_true")
 
-if len(sys.argv) == 1:
+if len(argv) < 4:
     parser.print_help()
-    sys.exit(1)
+    exit()
 
 args = parser.parse_args()
-   
-# set up variable names for the arguments
-passfile = args.file
-hashfile = args.hashes
-password = args.password
-useraspass = args.username
 
-counter = 0
-d = {}
 
-def hash_ntlm(password):
-    try:
-      hash = hashlib.new('md4', password.encode('utf-16le')).digest()
-      return binascii.hexlify(hash)
-    except:
-      print "[-] Failed on %s" % password
-    
-if password:
-    hashed_password = hash_ntlm(password.strip())
-    d[password] = hashed_password
-elif passfile:
-    with open(passfile) as infile:
-        for password in infile:         
-            hashed_password = hash_ntlm(password.strip())
-            d[password] = hashed_password
-    infile.close()
+class Password:
+    """Password class."""
 
-with open(hashfile) as infile:
-    for line in infile:
-        if useraspass:
-            match = re.search('(.+):\d+:.+:(.+):::', line)
-            if match:
-                user = match.group(1)
-                ntlm = match.group(2)
-                user_as_ntlm = hash_ntlm(user)
-                upper_as_ntlm = hash_ntlm(user.upper())
-                lower_as_ntlm = hash_ntlm(user.lower())
-                if user_as_ntlm == ntlm:
-                    print "%s: %s" % (user, user)
-                    counter += 1
-                elif upper_as_ntlm == ntlm:
-                    print "%s: %s" % (user.upper(), user)
-                    counter += 1
-                elif lower_as_ntlm == ntlm:
-                    print "%s: %s" % (user.lower(), user)
-                    counter += 1
+    def __init__(self, password):
+        """Initialize password object."""
+        self.password = password.strip()
+        self.ntlm = self.hash(self.password)
+        self.lm = self.lm_hash(self.password)
+
+    def hash(self, password):
+        """Hash the given password as NTLM."""
+        h = password.encode('utf-16le')
+        h = hashlib.new('md4', h).digest()
+        return hexlify(h)
+
+    def lm_hash(self, password):
+        """Hash the given password as LM."""
+        h = lmhash.hash(password.strip())
+        return h
+
+
+class ParseHashLine:
+    """Parse the username and NTLM hash from input string."""
+
+    def __init__(self, unparsed_str):
+        """Docstring."""
+        self.unparsed_str = unparsed_str.strip()
+        self.user = ''
+        self.ntlm_hash = ''
+        self.lm_hash = ''
+        self.parse(self.unparsed_str)
+
+    def parse(self, unparsed_str):
+        """Parse the string and return a user and ntlm hash."""
+        match = re.search('(.+):\d+:(.+):(.+):::', unparsed_str)
+        if match:
+            self.user = match.group(1)
+            self.lm_hash = match.group(2)
+            self.ntlm_hash = match.group(3)
         else:
-            for password, hashed_password in d.iteritems():
-                match = re.search("(.+):\d+:.+:(%s):::"
-                                   % hashed_password, line)
-                if match:
-                    print "%s: %s" % (password, match.group(1))                     
-                    counter += 1
+            return False
 
-print "%s account(s) found." % counter
+
+if args.file:
+    """If there is a list of passwords, create an object for each."""
+    in_file = open(args.file, 'r')
+    passwords = [Password(password=password) for password in in_file]
+    in_file.close()
+elif args.password:
+    """Just use one given password."""
+    passwords = [Password(args.password)]
+
+with open(args.hashes) as in_hashes:
+    ntlm_counter = 0
+    lm_counter = 0
+    for line in in_hashes:
+        """Prevent LM hashes from being displayed more than once."""
+        found_lm = False
+        hash_str = ParseHashLine(line)
+        if args.username:
+            """Try the username as given, upper and lower."""
+            try:
+                unique_pass = list(set([hash_str.user, hash_str.user.upper(),
+                                   hash_str.user.lower()]))
+                passwords = [Password(password=password) for password in
+                             unique_pass]
+
+            except Exception:
+                pass
+
+        for password_obj in passwords:
+            if password_obj.ntlm == hash_str.ntlm_hash:
+                print "NTLM: %s : %s" % (hash_str.user, password_obj.password)
+                ntlm_counter += 1
+            elif password_obj.lm == hash_str.lm_hash and not found_lm:
+                print "LM  : %s : %s" % (hash_str.user,
+                                         password_obj.password.upper())
+                found_lm = True
+                lm_counter += 1
+print "\n[+] Found %d NTLM passwords, %d LM passwords" % (ntlm_counter,
+                                                          lm_counter)
