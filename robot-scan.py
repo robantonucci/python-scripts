@@ -49,7 +49,7 @@ class Url:
 
 
 class Scanner:
-    """Scan URLs found in robots.txt."""
+    """Scan URLs with requests."""
 
     def __init__(self, url):
         """Initialize Scanner class."""

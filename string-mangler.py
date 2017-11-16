@@ -39,30 +39,36 @@ args = parser.parse_args()
 
 
 class Str:
+    """Input string class."""
 
     def __init__(self, input_string, e):
+        """Initialize Str class."""
         self.input_string = input_string
         self.e = e
 
     def base64(self):
+        """Encode/decode in base64."""
         if self.e:
             return base64.b64encode(self.input_string)
         else:
             return base64.b64decode(self.input_string)
 
     def rot13(self):
+        """Encode/decode in ROT13."""
         if self.e:
             return codecs.encode(self.input_string, 'rot13')
         else:
             return codecs.decode(self.input_string, 'rot13')
 
     def url(self):
+        """Encode/decode in URL."""
         if self.e:
             return urllib.quote_plus(self.input_string)
         else:
             return urllib.unquote(self.input_string)
 
     def md5(self):
+        """Encode in MD5."""
         if self.e:
             h = hashlib.md5()
             h.update(self.input_string)
@@ -71,6 +77,7 @@ class Str:
             return "https://hashkiller.co.uk/md5-decrypter.aspx"
 
     def ntlm(self):
+        """Encode in NTLM."""
         if self.e:
             h = self.input_string.encode('utf-16le')
             h = hashlib.new('md4', h).digest()
@@ -79,6 +86,7 @@ class Str:
             return "https://hashkiller.co.uk/ntlm-decrypter.aspx"
 
     def psh(self):
+        """Encode/decode in base64 for PowerShell (Unicode)."""
         if self.e:
             return base64.b64encode(self.input_string.encode('utf-16le'))
         else:
