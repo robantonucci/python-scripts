@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+"""This script will encode/decode strings."""
 import codecs
 import base64
 import argparse
@@ -84,7 +85,6 @@ class Str:
             return base64.b64decode(self.input_string).decode('utf-16le')
 
 
-# encode or decode?
 if args.encode:
     str_object = Str(args.input_string, 1)
 else:
