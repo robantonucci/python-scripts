@@ -45,7 +45,7 @@ class Url:
                 entries.append(match.group(1))
                 if match.group(1).endswith('/'):
                     entries.append(match.group(1)[:-1])
-        return list(set(entries))
+        return list(sorted(set(entries)))
 
 
 class Scanner:
@@ -73,5 +73,4 @@ except Exception:
 for entry in url_obj.robot_entries:
     full_entry = url_obj.url + entry
     scan_obj = Scanner(full_entry)
-    if scan_obj.status_code == 200:
-        print scan_obj.content_len, full_entry
+    print scan_obj.status_code, scan_obj.content_len, full_entry
