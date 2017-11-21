@@ -59,7 +59,7 @@ for line in nmap_input:
         host_obj = Host(ip)
     elif os_match:
         os = os_match.group(1)
-        host_obj.os = os
+        host_obj.os = '"%s"' % os
     elif fqdn_match:
         fqdn = fqdn_match.group(1)
         host_obj.fqdn = fqdn
