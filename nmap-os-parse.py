@@ -57,19 +57,19 @@ for line in nmap_input:
     if ip_match:
         ip = ip_match.group(1)
         host_obj = Host(ip)
-    if os_match:
+    elif os_match:
         os = os_match.group(1)
         host_obj.os = os
-    if fqdn_match:
+    elif fqdn_match:
         fqdn = fqdn_match.group(1)
         host_obj.fqdn = fqdn
-    if workgroup_match:
+    elif workgroup_match:
         workgroup = workgroup_match.group(1)
         host_obj.workgroup = workgroup
-    if name_match:
+    elif name_match:
         name = name_match.group(1)
         host_obj.name = name
-    if "System time:" in line:
+    elif "System time:" in line:
         if host_obj.os != '':
             print host_obj.format_print()
             writer.writerow(host_obj.format_csv())
