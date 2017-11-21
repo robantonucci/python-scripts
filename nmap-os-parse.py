@@ -6,9 +6,9 @@ from sys import argv, exit
 
 parser = argparse.ArgumentParser(
     description="For parsing the results of Nmap's smb-os-discovery.nse\n"
-    "\nnmap -sU -sS --script smb-os-discovery.nse --open -Pn -oN os-scan -n "
+    "\nnmap --script smb-os-discovery --open -Pn -oN os-scan.nmap -n "
     "--script-args=smbuser=svc_account,smbpass=password,smbdomain=contoso.com "
-    "-p U:137,T:139,T:445 10.0.0.0/8",
+    "-p 445 10.0.0.0/8",
     formatter_class=argparse.RawDescriptionHelpFormatter)
 parser.add_argument("input_file", help="Nmap file to parse")
 parser.add_argument("output_file", help="CSV output file")
