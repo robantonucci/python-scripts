@@ -27,23 +27,24 @@ class Host:
         self.ip = ip
         self.os = ''
         self.fqdn = ''
+        self.domain = ''
         self.workgroup = ''
         self.name = ''
 
     def format_print(self):
         """Print out fields."""
-        return "%s,%s,%s,%s,%s" % (self.ip, self.name, self.fqdn, self.os,
-                                   self.workgroup)
+        return "%s,%s,%s,%s,%s,%s" % (self.ip, self.name, self.domain,
+                                      self.fqdn, self.os, self.workgroup)
 
     def format_csv(self):
         """Fornat CSV out dict."""
         return {'IP': self.ip, 'OS': self.os, 'NAME': self.name, 'FQDN':
-                self.fqdn, 'WORKGROUP': self.workgroup}
+                self.fqdn, 'DOMAIN': self.domain, 'WORKGROUP': self.workgroup}
 
 
 nmap_input = open(args.input_file, 'r')
 csv_output = open(args.output_file, 'wb')
-field_names = ['IP', 'NAME', 'FQDN', 'OS', 'WORKGROUP']
+field_names = ['IP', 'NAME', 'FQDN', 'DOMAIN', 'OS', 'WORKGROUP']
 writer = csv.DictWriter(csv_output, fieldnames=field_names)
 writer.writeheader()
 
@@ -51,15 +52,19 @@ for line in nmap_input:
     ip_match = search("Nmap scan report for (?:.+ \\()?(\\d{1,3}\\.\\d{1,3}"
                       "\\.\\d{1,3}\\.\\d{1,3})", line)
     fqdn_match = search("FQDN: (.+)", line)
-    workgroup_match = search("Workgroup: (.+)", line)
+    workgroup_match = search(r"Workgroup: ([^\n\\]+)", line)
     os_match = search("OS: (.+)", line)
-    name_match = search("Computer name: (.+)", line)
+    domain_match = search(r"Domain name: ([^\n\\]+)", line)
+    name_match = search(r"omputer name: ([^\n\\]+)", line)
     if ip_match:
         ip = ip_match.group(1)
         host_obj = Host(ip)
     elif os_match:
         os = os_match.group(1)
         host_obj.os = '"%s"' % os
+    elif domain_match:
+        domain = domain_match.group(1)
+        host_obj.domain = domain
     elif fqdn_match:
         fqdn = fqdn_match.group(1)
         host_obj.fqdn = fqdn
