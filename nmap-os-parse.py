@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 """This script will parse the results of Nmap's smb-os-discovery.nse."""
 import argparse
 import csv
