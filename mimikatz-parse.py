@@ -46,11 +46,14 @@ class Password:
     def format_print(self):
         """Print out fields."""
         if self.password != '':
-            line = "%s:%s:%s" % (self.username, self.domain, self.password)
+            line = "USERNAME: %s\nDOMAIN  : %s\nPASSWORD: %s\n" % (
+                                                                 self.username,
+                                                                 self.domain,
+                                                                 self.password)
             return (1, line)
         elif self.ntlm != '':
-            line = "%s:%s:%s:%s" % (self.username, self.domain, self.lm,
-                                    self.ntlm)
+            line = "%s:%s:%s:%s:::" % (self.username, self.domain, self.lm,
+                                       self.ntlm)
             return (2, line)
         else:
             return False
@@ -111,6 +114,6 @@ for password in list(sorted(set(passwords))):
 print
 for hash in list(sorted(set(hashes))):
     print hash
-print
+print "\n"
 for account in sam:
     print account
